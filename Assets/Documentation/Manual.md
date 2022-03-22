@@ -26,7 +26,6 @@ Description
 ### Script
 
 ```
-
         [SerializeField] Transform target = null;
 	[SerializeField] float speed = 1.0f;
 	[SerializeField] float innerBuffer = 0.1f;
@@ -158,7 +157,6 @@ Description
 ### Script
 
 ```
-	
     [SerializeField] float moveSpeed = 0.25f;
     [SerializeField] float rayLength = 1.4f;
     [SerializeField] float rayOffsetX = 0.5f;
@@ -181,10 +179,10 @@ Description
     [SerializeField] float fallSpeed = 30f;
     bool falling;
     float targetFallHeight;
-    ```
+```
     
     
-    ```
+```
     void Update() {
 
         // Set the ray positions every frame
