@@ -24,6 +24,7 @@ Description
 -   `OuterBuffer` - 
 
 ### Script
+
 [SerializeField]
 	Transform target = null;
 	[SerializeField]
@@ -73,8 +74,7 @@ Description
 -   `speed` -
 
 ### Script
-public class CameraRotation : MonoBehaviour
-{
+
 	[SerializeField] RotationDirection rotationDirection;
 	[SerializeField] float speed = 360f;
 	Quaternion targetRotation = Quaternion.identity;
@@ -136,6 +136,7 @@ Description
 -   `RayOffsetZ` - 
 
 ### Script
+	
 [SerializeField] float moveSpeed = 0.25f;
     [SerializeField] float rayLength = 1.4f;
     [SerializeField] float rayOffsetX = 0.5f;
