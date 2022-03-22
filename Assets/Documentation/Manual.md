@@ -1,269 +1,397 @@
-Main Menu System Guide
+Grid Movement Guide
 ======================
 
-This documentation describes how to use the `SettingsMenu` component in
-your project.
+This documentation describes how to use the `Grid Movement` component in your project.
 
 Behaviours
 ----------
 
--   \[`AudioManager`\]
--   \[`MainMenu`\]
--   \[`SettingsMenu`\]
--   \[`StopSounds`\]
+-   \[`CameraMovement`\]
+-   \[`CameraRotation`\]
+-   \[`CameraRotationTrigger`\]
+-   \[`PlayerMovement`\]
 
-AudioManager
+CameraMovement
 ------------
 
-This behaviour allows you to store all your audio files in one
-gameobject, adjusting the files properties and being able to reference
-them.
+Description
 
 ### Properties
 
--   `Sounds` - List that contains all the sounds
--   `Name` - Name of the audio clip to refer to it
--   `Clip` - Location of the audio file
--   `Volume` - How loud the audio is
--   `Pitch` - Adjust the pitch of the audio
--   `Loop` - Decided if the audio clip should loop once it reaches the
-    end
--   `Group` - The Audio group that this clip belongs to, in order to
-    adjust audio levels as a group.
+-   `Target` - 
+-   `Speed` - 
+-   `InnerBuffer` - 
+-   `OuterBuffer` - 
 
 ### Script
+[SerializeField]
+	Transform target = null;
+	[SerializeField]
+	float speed = 1.0f;
+	[SerializeField]
+	float innerBuffer = 0.1f;
+	[SerializeField]
+	float outerBuffer = 1.5f;
+	bool moving;
+	Vector3 offset;
 
-In order to use audio files we must reference Unity's Audio system.
+	void Start() {
+		offset = target.position + transform.position;
+	}
 
-    using UnityEngine.Audio;
+	void Update() {
+		Vector3 cameraTargetPosition = target.position + offset;
+		Vector3 heading = cameraTargetPosition - transform.position;
+		float distance = heading.magnitude;
+		Vector3 direction = heading / distance;
 
-We create a list that stores all the audio files and instance it so that
-it will be present in all of our scenes, so we can use all the sounds in
-every single scene, for each audio clip that we add we add some
-properties that we can later adjust in the Inspector.
+		if (distance > outerBuffer)
+			moving = true;
 
-    public Sound[] sounds;
-        public static AudioManager instance;
-        void Awake()
-        {
-            if (instance == null)
-                instance = this;
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
-            DontDestroyOnLoad(gameObject);
-            foreach (Sound s in sounds)
-            {
-                s.source = gameObject.AddComponent<AudioSource>();
-                s.source.clip = s.clip;
-                s.source.outputAudioMixerGroup = s.group;
+		if (moving) {
+			if (distance > innerBuffer)
+				transform.position += direction * Time.deltaTime * speed * Mathf.Max(distance, 1f);
+			else {
+				transform.position = cameraTargetPosition;
+				moving = false;
+			}
+		}
+	}
 
-                s.source.loop = s.loop;
-            }
-        }
+    void OnDrawGizmos() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(target.position + offset, innerBuffer);
+        Gizmos.DrawWireSphere(target.position + offset, outerBuffer);
 
-In order to call sounds within other scripts we create a public void
-with the string which will be our audioclips `Name`
-
-        public void Play(string name)
-        {
-            Sound s = Array.Find(sounds, sound => sound.name == name);
-            if (s == null)
-            {
-                Debug.LogWarning("Sound: " + name + " not found!");
-                return;
-            }
-            s.source.volume = s.volume;
-            s.source.pitch = s.pitch;
-            s.source.Play();
-        }
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(transform.position, innerBuffer);
     }
+}
 
-MainMenu
+CameraRotation
 --------
 
-This behaviour allows you to load Twitter with preset messages to
-promote the game, you can also exit the game and switch to the next
-scene using buttons.
+Description
 
 ### Properties
 
--   `APP_PC_Link` - Link to the site where your game is located.
--   `Twittername Parameter` - Message included in the tweet.
+-   `rotationDirection` -
+-   `speed` -
 
 ### Script
+[SerializeField]
+	RotationDirection rotationDirection;
 
-In order to switch scenes we will need to use Unity's SceneManagement.
+	[SerializeField]
+	float speed = 360f;
 
-    using UnityEngine.SceneManagement;
+	Quaternion targetRotation = Quaternion.identity;
 
-We create a few strings that will change what is tweeted for us, we are
-able to link the game as well as a brief description of it, in order to
-bring up twitters create tweet we link to its url, and you can even
-change the language if you or the game are not english.
+	public void Update() {
+		if (transform.rotation != targetRotation) {
+			transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation,
+					speed * Time.deltaTime);
+		}
+	}
 
-    [SerializeField] private string APP_PC_LINK = "INSERT LINK HERE";
-    [SerializeField] private string twitternameParameter = "Just played GAME TITLE, GAME DESCRIPTION";
-    private string twitterdescriptionParam = "";
-    private const string TWITTER_ADDRESS = "http://twitter.com/intent/tweet";
-    private const string TWITTER_LANGUAGE = "en";
+	public void RotateTo(Vector3 to) {
+		Vector3 relativePos = transform.position + to;
+		targetRotation = Quaternion.LookRotation(relativePos - transform.position, Vector3.up);
+	}
+}
 
-A few voids are made which will be mapped onto Button's OnClick event,
-this allows us to quickly transition the scene to the next one in the
-build index list, and you can also quit the game at the same time. Using
-the strings we created we can reference them when loading up the url
-which will take players to a new window.
-
-    public void PlayGame()
-    {
-    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-    }
-    public void Promote()
-    {
-    Application.OpenURL(TWITTER_ADDRESS + "?text=" + WWW.EscapeURL(twitternameParameter + "\n" + twitterdescriptionParam + "\n" + APP_PC_LINK));
-    }
-    public void QuitGame()
-    {
-    Debug.Log("QUIT");
-    Application.Quit();
-    }
-    }
-
-SettingsMenu
+CameraRotationTrigger
 ------------
 
-This behaviour allows you to change the volume for every single sound as
-well as specifically the Music and SFX. It also allows you to adjust the
-games resolution, quality setting and if you want the game to be
-fullscreened or not.
+Description
 
 ### Properties
 
--   `AudioMixer` - The parent mixer object that controls all the games
-    sound
--   `MusicMixer` - Controls the volume of sounds under the
-    musicmixergroup
--   `SFXMixer` - Controls the volume of sounds under the sfxmixergroup
--   `ResolutionDropdown`- Dropdown UI component that allows you to
-    select between all the available resolutions
-
+-   `cameraRotator` - 
+-   `targetDirection` - 
+-   `exitDirection` - 
+-   
 ### Script
 
-In this script we are able to do many things such as load a specific
-scene and controlling audio while require the usage of UI systems and
-IEnumerables.
+  [SerializeField]
+    GameObject cameraRotator = null;
 
-    using UnityEngine.Audio;
-    using UnityEngine.UI;
-    using System.Linq;
-    using TMPro;
-    using UnityEngine.SceneManagement;
+    [SerializeField]
+    RotationDirection targetDirection = RotationDirection.forward;
 
-We start by referencing our 3 audio groups, the Audio Mixer which is the
-parent of both the Music and SFX Mixer has a different reference
-compared to the childs. We are also making use of TMP to improve the
-quality of the UI therefore we need to reference the TMPDropdown instead
-of the regular Dropdown. In order to display all ouf our resolutions we
-will be creating a list.
+    [SerializeField]
+    RotationDirection exitDirection = RotationDirection.forward;
 
-    public AudioMixer AudioMixer;
-    public AudioMixerGroup MusicMixer;
-    public AudioMixerGroup SFXMixer;
-    public TMP_Dropdown resolutionDropdown;
-    Resolution[] resolutions;
+    CameraRotation cameraRotation = null;
 
-Because every computer is different they may not be able to use higher
-resolutions therefore it would be pointless including them in the List,
-therefore we will check the available resolutions when the game starts
-as the user will not be immediately put on the settings menu. In this
-start function we also set it so that the framerate is the highest
-possible, this means that if the users machine is capable of 60fps then
-all the resolutions will be 60fps, this also stops duplicate resolutions
-from showing every single possible framerate, making it much easier to
-scroll through the dropdown.
-
-    private void Start()
-    {
-    resolutions = Screen.resolutions.Select(resolution => new Resolution { width = resolution.width, height = resolution.height }).Distinct().ToArray();
-    resolutionDropdown.ClearOptions();
-    List<string> options = new List<string>();
-    int currentResolutionIndex = 0;
-    for (int i = 0; i < resolutions.Length; i++)
-    {
-    string option = resolutions[i].width + " x " + resolutions[i].height;
-    options.Add(option);
-    if (resolutions[i].width == Screen.width &&
-    resolutions[i].height == Screen.height)
-    {
-    currentResolutionIndex = i;
-    }
-    }
-    resolutionDropdown.AddOptions(options);
-    resolutionDropdown.value = currentResolutionIndex;
-    resolutionDropdown.RefreshShownValue();
+    void Start() {
+        cameraRotation = cameraRotator.GetComponent<CameraRotation>();
+        GetComponent<MeshRenderer>().enabled = false;
     }
 
-Using the resolution system we just created as well as using Unity's own
-settings, we can create multiple voids that we can assign to buttons
-using OnValueChanged, this can be used to change the volume as you move
-the sliders.
-
-    public void LoadScene(int level)
-    {
-    SceneManager.LoadScene(level);
-    }
-    public void SetResolution(int ResolutionIndex)
-    {
-    Resolution resolution = resolutions[ResolutionIndex];
-    Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-    }
-    public void SetVolume(float volume)
-    {
-    AudioMixer.SetFloat("volume", volume);
-    }
-    public void SetMusicVolume(float MusicVolume)
-    {
-    AudioMixer.SetFloat("musicvolume", MusicVolume);
-    }
-    public void SetSFXVolume(float SFXVolume)
-    {
-    AudioMixer.SetFloat("sfxvolume", SFXVolume);
-    }
-    public void SetQuality(int qualityIndex)
-    {
-     QualitySettings.SetQualityLevel(qualityIndex);
-    }
-    public void SetFullscreen(bool isFullscreen)
-    {
-    Screen.fullScreen = isFullscreen;
-     }
+    void OnTriggerStay(Collider other) {
+        if (other.tag == "Player") {
+            cameraRotation.RotateTo(Direction.ToVector(targetDirection));
+        }
     }
 
-StopSounds
+    void OnTriggerExit(Collider other) {
+        if (other.tag == "Player") {
+            cameraRotation.RotateTo(Direction.ToVector(exitDirection));
+        }
+    }
+}
+
+PlayerMovement
 ----------
 
-Stops all the sounds in the scene playing.
-
+Description
 ### Properties
 
--   `Audio Source` - References all the audio sources present in the
-    scene.
+-   `Move Speed` - Speed at which the player moves between grids
+-   `Ray Length` - 
+-   `RayOffsetX` - 
+-   `RayOffsetY` - 
+-   `RayOffsetZ` - 
 
 ### Script
+[SerializeField]
+    float moveSpeed = 0.25f;
+    [SerializeField]
+    float rayLength = 1.4f;
+    [SerializeField]
+    float rayOffsetX = 0.5f;
+    [SerializeField]
+    float rayOffsetY = 0.5f;
+    [SerializeField]
+    float rayOffsetZ = 0.5f;
 
-We create a list for AudioSources. In the StopAllAudio void we find all
-the audio sources in the scene and stop each one playing.
+    Vector3 targetPosition;
+    Vector3 startPosition;
+    bool moving;
 
-        private AudioSource[] allAudioSources;
-        public void StopAllAudio()
-        {
-            allAudioSources = FindObjectsOfType(typeof(AudioSource)) as AudioSource[];
-            foreach (AudioSource audioS in allAudioSources)
-            {
-                Debug.Log("MUSIC STOPPED");
-                audioS.Stop();
+    Vector3 xOffset;
+    Vector3 yOffset;
+    Vector3 zOffset;
+    Vector3 zAxisOriginA;
+    Vector3 zAxisOriginB;
+    Vector3 xAxisOriginA;
+    Vector3 xAxisOriginB;
+
+    [SerializeField]
+    Transform cameraRotator = null;
+
+    [SerializeField]
+    LayerMask walkableMask = 0;
+
+    [SerializeField]
+    LayerMask collidableMask = 0;
+
+    [SerializeField]
+    float maxFallCastDistance = 100f;
+    [SerializeField]
+    float fallSpeed = 30f;
+    bool falling;
+    float targetFallHeight;
+
+    void Update() {
+
+        // Set the ray positions every frame
+
+        yOffset = transform.position + Vector3.up * rayOffsetY;
+        zOffset = Vector3.forward * rayOffsetZ;
+        xOffset = Vector3.right * rayOffsetX;
+
+        zAxisOriginA = yOffset + xOffset;
+        zAxisOriginB = yOffset - xOffset;
+
+        xAxisOriginA = yOffset + zOffset;
+        xAxisOriginB = yOffset - zOffset;
+
+        // Draw Debug Rays
+        
+        Debug.DrawLine(
+                zAxisOriginA,
+                zAxisOriginA + Vector3.forward * rayLength,
+                Color.red,
+                Time.deltaTime);
+        Debug.DrawLine(
+                zAxisOriginB,
+                zAxisOriginB + Vector3.forward * rayLength,
+                Color.red,
+                Time.deltaTime);
+
+        Debug.DrawLine(
+                zAxisOriginA,
+                zAxisOriginA + Vector3.back * rayLength,
+                Color.red,
+                Time.deltaTime);
+        Debug.DrawLine(
+                zAxisOriginB,
+                zAxisOriginB + Vector3.back * rayLength,
+                Color.red,
+                Time.deltaTime);
+
+        Debug.DrawLine(
+                xAxisOriginA,
+                xAxisOriginA + Vector3.left * rayLength,
+                Color.red,
+                Time.deltaTime);
+        Debug.DrawLine(
+                xAxisOriginB,
+                xAxisOriginB + Vector3.left * rayLength,
+                Color.red,
+                Time.deltaTime);
+
+        Debug.DrawLine(
+                xAxisOriginA,
+                xAxisOriginA + Vector3.right * rayLength,
+                Color.red,
+                Time.deltaTime);
+        Debug.DrawLine(
+                xAxisOriginB,
+                xAxisOriginB + Vector3.right * rayLength,
+                Color.red,
+                Time.deltaTime);
+
+        if (falling) {
+            if (transform.position.y <= targetFallHeight) {
+                float x = Mathf.Round(transform.position.x);
+                float y = Mathf.Round(targetFallHeight);
+                float z = Mathf.Round(transform.position.z);
+
+                transform.position = new Vector3(x, y, z);
+
+                falling = false;
+
+                return;
+            }
+
+            transform.position += Vector3.down * fallSpeed * Time.deltaTime;
+            return;
+        } else if (moving) {
+            if (Vector3.Distance(startPosition, transform.position) > 1f) {
+                float x = Mathf.Round(targetPosition.x);
+                float y = Mathf.Round(targetPosition.y);
+                float z = Mathf.Round(targetPosition.z);
+
+                transform.position = new Vector3(x, y, z);
+
+                moving = false;
+
+                return;
+            }
+
+            transform.position += (targetPosition - startPosition) * moveSpeed * Time.deltaTime;
+            return;
+        } else {
+            RaycastHit[] hits = Physics.RaycastAll(
+                    transform.position + Vector3.up * 0.5f,
+                    Vector3.down,
+                    maxFallCastDistance,
+                    walkableMask
+            );
+
+            if (hits.Length > 0) {
+                int topCollider = 0;
+                for (int i = 0; i < hits.Length; i++) {
+                    if (hits[topCollider].collider.bounds.max.y < hits[i].collider.bounds.max.y)
+                        topCollider = i;
+                }
+                if (hits[topCollider].distance > 1f) {
+                    targetFallHeight = transform.position.y - hits[topCollider].distance + 0.5f;
+                    falling = true;
+                }
+            } else {
+                targetFallHeight = -Mathf.Infinity;
+                falling = true;
+            }
+        }
+
+        // Handle player input
+        // Also handle moving up 1 level
+
+        if (Input.GetKeyDown(KeyCode.W)) {
+            if (CanMove(Vector3.forward)) {
+                targetPosition = transform.position + cameraRotator.transform.forward;
+                startPosition = transform.position;
+                moving = true;
+            } else if (CanMoveUp(Vector3.forward)) {
+                targetPosition = transform.position + cameraRotator.transform.forward + Vector3.up;
+                startPosition = transform.position;
+                moving = true;
+            }
+        } else if (Input.GetKeyDown(KeyCode.S)) {
+            if (CanMove(Vector3.back)) {
+                targetPosition = transform.position - cameraRotator.transform.forward;
+                startPosition = transform.position;
+                moving = true;
+            } else if (CanMoveUp(Vector3.back)) {
+                targetPosition = transform.position - cameraRotator.transform.forward + Vector3.up;
+                startPosition = transform.position;
+                moving = true;
+            }
+        } else if (Input.GetKeyDown(KeyCode.A)) {
+            if (CanMove(Vector3.left)) {
+                targetPosition = transform.position - cameraRotator.transform.right;
+                startPosition = transform.position;
+                moving = true;
+            } else if (CanMoveUp(Vector3.left)) {
+                targetPosition = transform.position - cameraRotator.transform.right + Vector3.up;
+                startPosition = transform.position;
+                moving = true;
+            }
+        } else if (Input.GetKeyDown(KeyCode.D)) {
+            if (CanMove(Vector3.right)) {
+                targetPosition = transform.position + cameraRotator.transform.right;
+                startPosition = transform.position;
+                moving = true;
+            } else if (CanMoveUp(Vector3.right)) {
+                targetPosition = transform.position + cameraRotator.transform.right + Vector3.up;
+                startPosition = transform.position;
+                moving = true;
             }
         }
     }
+
+    // Check if the player can move
+
+    bool CanMove(Vector3 direction) {
+        if (direction.z != 0) {
+            if (Physics.Raycast(zAxisOriginA, direction, rayLength)) return false;
+            if (Physics.Raycast(zAxisOriginB, direction, rayLength)) return false;
+        }
+        else if (direction.x != 0) {
+            if (Physics.Raycast(xAxisOriginA, direction, rayLength)) return false;
+            if (Physics.Raycast(xAxisOriginB, direction, rayLength)) return false;
+        }
+        return true;
+    }
+
+    // Check if the player can step-up
+
+    bool CanMoveUp(Vector3 direction) {
+        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.up, 1f, collidableMask))
+            return false;
+        if (Physics.Raycast(transform.position + Vector3.up * 1.5f, direction, 1f, collidableMask))
+            return false;
+        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, direction, 1f, walkableMask))
+            return true;
+        return false;
+    }
+
+    void OnCollisionEnter(Collision other) {
+        if (falling && (1 << other.gameObject.layer & walkableMask) == 0) {
+            // Find a nearby vacant square to push us on to
+            Vector3 direction = Vector3.zero;
+            Vector3[] directions = { Vector3.forward, Vector3.right, Vector3.back, Vector3.left };
+            for (int i = 0; i < 4; i++) {
+                if (Physics.OverlapSphere(transform.position + directions[i], 0.1f).Length == 0) {
+                    direction = directions[i];
+                    break;
+                }
+            }
+            transform.position += direction;
+        }
+    }
+}
