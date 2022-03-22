@@ -24,7 +24,7 @@ Description
 -   `OuterBuffer` - 
 
 ### Script
-        [SerializeField] Transform target = null;
+[SerializeField] Transform target = null;
 	[SerializeField] float speed = 1.0f;
 	[SerializeField] float innerBuffer = 0.1f;
 	[SerializeField] float outerBuffer = 1.5f;
