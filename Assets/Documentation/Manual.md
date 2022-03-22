@@ -24,7 +24,10 @@ Description
 -   `OuterBuffer` - 
 
 ### Script
-[SerializeField] Transform target = null;
+
+```
+
+        [SerializeField] Transform target = null;
 	[SerializeField] float speed = 1.0f;
 	[SerializeField] float innerBuffer = 0.1f;
 	[SerializeField] float outerBuffer = 1.5f;
@@ -33,6 +36,10 @@ Description
 	void Start() {
 		offset = target.position + transform.position;
 	}
+```
+
+
+```
 	void Update() {
 		Vector3 cameraTargetPosition = target.position + offset;
 		Vector3 heading = cameraTargetPosition - transform.position;
@@ -49,6 +56,10 @@ Description
 			}
 		}
 	}
+```
+
+
+```
     void OnDrawGizmos() {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(target.position + offset, innerBuffer);
@@ -57,6 +68,7 @@ Description
         Gizmos.DrawWireSphere(transform.position, innerBuffer);
     }
 }
+```
 
 
 
@@ -73,6 +85,7 @@ Description
 
 ### Script
 
+```
 	[SerializeField] RotationDirection rotationDirection;
 	[SerializeField] float speed = 360f;
 	Quaternion targetRotation = Quaternion.identity;
@@ -87,6 +100,8 @@ Description
 		targetRotation = Quaternion.LookRotation(relativePos - transform.position, Vector3.up);
 	}
 }
+```
+
 
 CameraRotationTrigger
 ------------
@@ -101,6 +116,7 @@ Description
 -   
 ### Script
 
+```
     [SerializeField] GameObject cameraRotator = null;
     [SerializeField] RotationDirection targetDirection = RotationDirection.forward;
     [SerializeField] RotationDirection exitDirection = RotationDirection.forward;
@@ -109,6 +125,10 @@ Description
         cameraRotation = cameraRotator.GetComponent<CameraRotation>();
         GetComponent<MeshRenderer>().enabled = false;
     }
+```
+   
+   
+```
     void OnTriggerStay(Collider other) {
         if (other.tag == "Player") {
             cameraRotation.RotateTo(Direction.ToVector(targetDirection));
@@ -120,6 +140,8 @@ Description
         }
     }
 }
+```
+
 
 PlayerMovement
 ----------
@@ -134,6 +156,8 @@ Description
 -   `RayOffsetZ` - 
 
 ### Script
+
+```
 	
     [SerializeField] float moveSpeed = 0.25f;
     [SerializeField] float rayLength = 1.4f;
@@ -157,6 +181,10 @@ Description
     [SerializeField] float fallSpeed = 30f;
     bool falling;
     float targetFallHeight;
+    ```
+    
+    
+    ```
     void Update() {
 
         // Set the ray positions every frame
@@ -208,6 +236,9 @@ Description
                 xAxisOriginB + Vector3.right * rayLength,
                 Color.red,
                 Time.deltaTime);
+```
+
+```
         if (falling) {
             if (transform.position.y <= targetFallHeight) {
                 float x = Mathf.Round(transform.position.x);
@@ -237,6 +268,9 @@ Description
                     maxFallCastDistance,
                     walkableMask
             );
+```    
+
+``` 
             if (hits.Length > 0) {
                 int topCollider = 0;
                 for (int i = 0; i < hits.Length; i++) {
@@ -252,6 +286,9 @@ Description
                 falling = true;
             }
         }
+```
+
+```
         // Handle player input
         // Also handle moving up 1 level
         if (Input.GetKeyDown(KeyCode.W)) {
@@ -296,6 +333,10 @@ Description
             }
         }
     }
+    
+```
+
+```
     // Check if the player can move
     bool CanMove(Vector3 direction) {
         if (direction.z != 0) {
@@ -318,6 +359,10 @@ Description
             return true;
         return false;
     }
+    
+```
+
+```
     void OnCollisionEnter(Collision other) {
         if (falling && (1 << other.gameObject.layer & walkableMask) == 0) {
             // Find a nearby vacant square to push us on to
@@ -333,3 +378,4 @@ Description
         }
     }
 }
+```
