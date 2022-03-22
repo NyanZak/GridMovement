@@ -24,15 +24,10 @@ Description
 -   `OuterBuffer` - 
 
 ### Script
-
-[SerializeField]
-	Transform target = null;
-	[SerializeField]
-	float speed = 1.0f;
-	[SerializeField]
-	float innerBuffer = 0.1f;
-	[SerializeField]
-	float outerBuffer = 1.5f;
+        [SerializeField] Transform target = null;
+	[SerializeField] float speed = 1.0f;
+	[SerializeField] float innerBuffer = 0.1f;
+	[SerializeField] float outerBuffer = 1.5f;
 	bool moving;
 	Vector3 offset;
 	void Start() {
@@ -62,6 +57,9 @@ Description
         Gizmos.DrawWireSphere(transform.position, innerBuffer);
     }
 }
+
+
+
 
 CameraRotation
 --------
@@ -103,7 +101,7 @@ Description
 -   
 ### Script
 
-  [SerializeField] GameObject cameraRotator = null;
+    [SerializeField] GameObject cameraRotator = null;
     [SerializeField] RotationDirection targetDirection = RotationDirection.forward;
     [SerializeField] RotationDirection exitDirection = RotationDirection.forward;
     CameraRotation cameraRotation = null;
@@ -137,7 +135,7 @@ Description
 
 ### Script
 	
-[SerializeField] float moveSpeed = 0.25f;
+    [SerializeField] float moveSpeed = 0.25f;
     [SerializeField] float rayLength = 1.4f;
     [SerializeField] float rayOffsetX = 0.5f;
     [SerializeField] float rayOffsetY = 0.5f;
