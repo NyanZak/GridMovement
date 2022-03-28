@@ -18,8 +18,8 @@ Description
 
 ### Properties
 
--   `Target` - 
--   `Speed` - 
+-   `Target` - Who the camera will Look At
+-   `Speed` - The speed at which the camera follows the player
 -   `InnerBuffer` - 
 -   `OuterBuffer` - 
 
@@ -79,8 +79,8 @@ Description
 
 ### Properties
 
--   `rotationDirection` -
--   `speed` -
+-   `rotationDirection` - The direction that the camera will be rotated
+-   `speed` - The speed that the camera will be rotated
 
 ### Script
 
@@ -109,7 +109,7 @@ Description
 
 ### Properties
 
--   `cameraRotator` - 
+-   `cameraRotator` - The parent object holding the camera
 -   `targetDirection` - 
 -   `exitDirection` - 
 -   
@@ -149,10 +149,15 @@ Description
 ### Properties
 
 -   `Move Speed` - Speed at which the player moves between grids
--   `Ray Length` - 
+-   `Ray Length` - Determines the length of the ray cast, if an object collides with the raycast then the player cannot move in that direction
 -   `RayOffsetX` - 
 -   `RayOffsetY` - 
 -   `RayOffsetZ` - 
+-   `Camera Rotator` -
+-   `Walkable Mask` - Layer that makes objects walkable on by the Player
+-   `Collidable Mask` - Layer that makes objects unwalkable on by the Player
+-   `Max Fall Cast Distance` - 
+-   `Fall Speed` - Speed at which the player falls  
 
 ### Script
 
