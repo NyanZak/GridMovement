@@ -18,10 +18,10 @@ Description
 
 ### Properties
 
--   `Target` - Who the camera will Look At
+-   `Target` - Locks the camera to the targets movement
 -   `Speed` - The speed at which the camera follows the player
--   `InnerBuffer` - 
--   `OuterBuffer` - 
+-   `InnerBuffer` - If the camera is within this radius then the camera will not move
+-   `OuterBuffer` - If the camera is outside this radius then the camera will move
 
 ### Script
 
@@ -79,7 +79,7 @@ Description
 
 ### Properties
 
--   `rotationDirection` - The direction that the camera will be rotated
+-   `rotationDirection` - The direction that the camera will be rotated from an enum list
 -   `speed` - The speed that the camera will be rotated
 
 ### Script
@@ -110,8 +110,8 @@ Description
 ### Properties
 
 -   `cameraRotator` - The parent object holding the camera
--   `targetDirection` - 
--   `exitDirection` - 
+-   `targetDirection` - Direction the camera rotates towards when you enter the trigger
+-   `exitDirection` - Direction the camera rotates towards when you exit the trigger
 -   
 ### Script
 
@@ -150,13 +150,13 @@ Description
 
 -   `Move Speed` - Speed at which the player moves between grids
 -   `Ray Length` - Determines the length of the ray cast, if an object collides with the raycast then the player cannot move in that direction
--   `RayOffsetX` - 
--   `RayOffsetY` - 
--   `RayOffsetZ` - 
--   `Camera Rotator` -
+-   `RayOffsetX` - Used to see if the player can move on the X axis
+-   `RayOffsetY` - Used to see if the player can move on the Y axis
+-   `RayOffsetZ` - Used to see if the player can move on the Z axis
+-   `Camera Rotator` - Reference to the parent object holding the camera
 -   `Walkable Mask` - Layer that makes objects walkable on by the Player
 -   `Collidable Mask` - Layer that makes objects unwalkable on by the Player
--   `Max Fall Cast Distance` - 
+-   `Max Fall Cast Distance` - Distance the game checks to see if there is a walkable floor from a drop
 -   `Fall Speed` - Speed at which the player falls  
 
 ### Script
