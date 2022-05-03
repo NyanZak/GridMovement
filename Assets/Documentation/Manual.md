@@ -14,7 +14,7 @@ Behaviours
 CameraMovement
 ------------
 
-Description
+This behaviour allows the camera to follow the player depending on how close the player is to wall objects.
 
 ### Properties
 
@@ -75,7 +75,7 @@ Description
 CameraRotation
 --------
 
-Description
+This behaviour allows the camera to be rotated
 
 ### Properties
 
@@ -105,7 +105,7 @@ Description
 CameraRotationTrigger
 ------------
 
-Description
+This behaviour triggers the rotation of the camera.
 
 ### Properties
 
@@ -145,7 +145,7 @@ Description
 PlayerMovement
 ----------
 
-Description
+This behaviour allows the player to move via a grid, the player is able to move different heighted terrain as long as there is not a wall nearby.
 ### Properties
 
 -   `Move Speed` - Speed at which the player moves between grids
