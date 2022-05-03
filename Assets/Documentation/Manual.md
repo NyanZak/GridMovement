@@ -25,6 +25,9 @@ This behaviour allows the camera to follow the player depending on how close the
 
 ### Script
 
+In this script we start of by setting the cameras position relative to the player
+We then set values for how fast we want the camera to move as well as how far the player needs to be for an object in order for the player to move.
+
 ```
         [SerializeField] Transform target = null;
 	[SerializeField] float speed = 1.0f;
@@ -37,6 +40,7 @@ This behaviour allows the camera to follow the player depending on how close the
 	}
 ```
 
+We then update the cameras position every frame, however we allow the camera to lag behind the player a bit in order for the movement to look smoother.
 
 ```
 	void Update() {
@@ -57,6 +61,7 @@ This behaviour allows the camera to follow the player depending on how close the
 	}
 ```
 
+Visually shows the inner and outer buffer while in play mode, white dot shows the camera lagging and the red circle in the middle shows where the camera will be.
 
 ```
     void OnDrawGizmos() {
@@ -69,9 +74,6 @@ This behaviour allows the camera to follow the player depending on how close the
 }
 ```
 
-
-
-
 CameraRotation
 --------
 
@@ -83,6 +85,9 @@ This behaviour allows the camera to be rotated
 -   `speed` - The speed that the camera will be rotated
 
 ### Script
+
+Inside of the Update method we check to see if we need to rotate the camera based on its current rotation
+We then create a public method which we can call on from other scripts in order to call and rotate the camera
 
 ```
 	[SerializeField] RotationDirection rotationDirection;
@@ -101,7 +106,6 @@ This behaviour allows the camera to be rotated
 }
 ```
 
-
 CameraRotationTrigger
 ------------
 
@@ -115,6 +119,10 @@ This behaviour triggers the rotation of the camera.
 -   
 ### Script
 
+We make a reference to the camerarotation script so that we can access the RotateTo method
+We also make sure that the objects that trigger the rotations are invisible by disabling their meshrenderer at the start of the game.
+
+
 ```
     [SerializeField] GameObject cameraRotator = null;
     [SerializeField] RotationDirection targetDirection = RotationDirection.forward;
@@ -125,7 +133,8 @@ This behaviour triggers the rotation of the camera.
         GetComponent<MeshRenderer>().enabled = false;
     }
 ```
-   
+
+We have two trigger methods that change the cameras rotation based on if they are inside of it, or have just exited which we setup in the serialized fields.
    
 ```
     void OnTriggerStay(Collider other) {
@@ -146,6 +155,7 @@ PlayerMovement
 ----------
 
 This behaviour allows the player to move via a grid, the player is able to move different heighted terrain as long as there is not a wall nearby.
+
 ### Properties
 
 -   `Move Speed` - Speed at which the player moves between grids
@@ -160,6 +170,8 @@ This behaviour allows the player to move via a grid, the player is able to move 
 -   `Fall Speed` - Speed at which the player falls  
 
 ### Script
+
+By using serialized fields we can customise the restrictions of our players movement which can depend on the size of the player/objects.
 
 ```
     [SerializeField] float moveSpeed = 0.25f;
@@ -185,12 +197,11 @@ This behaviour allows the player to move via a grid, the player is able to move 
     bool falling;
     float targetFallHeight;
 ```
-    
-    
+
+Similarly to the camera we update the positions of our raycasts every update, in order to see when the raycasts hit an object we use debugs for all the axis in order to get a visual representation.
+
 ```
     void Update() {
-
-        // Set the ray positions every frame
         yOffset = transform.position + Vector3.up * rayOffsetY;
         zOffset = Vector3.forward * rayOffsetZ;
         xOffset = Vector3.right * rayOffsetX;
@@ -198,7 +209,6 @@ This behaviour allows the player to move via a grid, the player is able to move 
         zAxisOriginB = yOffset - xOffset;
         xAxisOriginA = yOffset + zOffset;
         xAxisOriginB = yOffset - zOffset;
-        // Draw Debug Rays
         Debug.DrawLine(
                 zAxisOriginA,
                 zAxisOriginA + Vector3.forward * rayLength,
@@ -241,6 +251,9 @@ This behaviour allows the player to move via a grid, the player is able to move 
                 Time.deltaTime);
 ```
 
+Inside the falling if statement we check to see if there is a floor within our fall height, if this is the case then we set the new transforms for the player, however if our player is moving on solid ground then the new transforms will be created from the position we push the player in and where they end up. In order to check if we are falling we use raycasts to check if the player is currently grounded or not.
+
+
 ```
         if (falling) {
             if (transform.position.y <= targetFallHeight) {
@@ -273,6 +286,8 @@ This behaviour allows the player to move via a grid, the player is able to move 
             );
 ```    
 
+In this if statement we check to see if the raycasts have hit anything, this will loop so that we can check whether the player is currently falling or not.
+
 ``` 
             if (hits.Length > 0) {
                 int topCollider = 0;
@@ -291,9 +306,9 @@ This behaviour allows the player to move via a grid, the player is able to move 
         }
 ```
 
+Allows the player to move in WASD directions as well having the ability to move up elevated terrain.
+
 ```
-        // Handle player input
-        // Also handle moving up 1 level
         if (Input.GetKeyDown(KeyCode.W)) {
             if (CanMove(Vector3.forward)) {
                 targetPosition = transform.position + cameraRotator.transform.forward;
@@ -339,8 +354,10 @@ This behaviour allows the player to move via a grid, the player is able to move 
     
 ```
 
+This portion of the script allows us to check if the player is able to move or not, this is dependent on whether there is an object hitting the raycasts or not
+We also use these raycasts to see if there is an object blocking the player from moving to a higher piece of terrain.
+
 ```
-    // Check if the player can move
     bool CanMove(Vector3 direction) {
         if (direction.z != 0) {
             if (Physics.Raycast(zAxisOriginA, direction, rayLength)) return false;
@@ -352,7 +369,6 @@ This behaviour allows the player to move via a grid, the player is able to move 
         }
         return true;
     }
-    // Check if the player can step-up
     bool CanMoveUp(Vector3 direction) {
         if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.up, 1f, collidableMask))
             return false;
@@ -365,10 +381,11 @@ This behaviour allows the player to move via a grid, the player is able to move 
     
 ```
 
+If the player steps onto an object without the walkable layer mask then the game pushes the player onto the nearest object with a walkable layer mask.
+
 ```
     void OnCollisionEnter(Collision other) {
         if (falling && (1 << other.gameObject.layer & walkableMask) == 0) {
-            // Find a nearby vacant square to push us on to
             Vector3 direction = Vector3.zero;
             Vector3[] directions = { Vector3.forward, Vector3.right, Vector3.back, Vector3.left };
             for (int i = 0; i < 4; i++) {
